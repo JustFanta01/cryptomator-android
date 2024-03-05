@@ -167,7 +167,8 @@ public class AutoUploadService extends Service {
 	private UploadFile createUploadFile(String fileName, Uri uri) {
 		return anUploadFile() //
 				.withFileName(fileName) //
-				.withDataSource(UriBasedDataSource.from(uri)) //
+				.withDataSource(UriBasedDataSource.from(uri))
+				.withModifiedDate(UriBasedDataSource.from(uri).modifiedDate(context))//
 				.thatIsReplacing(false).build();
 	}
 

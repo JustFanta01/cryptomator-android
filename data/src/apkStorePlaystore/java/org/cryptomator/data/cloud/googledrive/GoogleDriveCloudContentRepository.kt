@@ -21,6 +21,7 @@ import java.io.File
 import java.io.IOException
 import java.io.OutputStream
 import java.net.SocketTimeoutException
+import java.util.Date
 
 internal class GoogleDriveCloudContentRepository(context: Context, private val cloud: GoogleDriveCloud, idCache: GoogleDriveIdCache) :
 	InterceptingCloudContentRepository<GoogleDriveCloud, GoogleDriveNode, GoogleDriveFolder, GoogleDriveFile>(Intercepted(context, cloud, idCache)) {
@@ -30,6 +31,10 @@ internal class GoogleDriveCloudContentRepository(context: Context, private val c
 		throwConnectionErrorIfRequired(e)
 		throwUserRecoverableAuthenticationExceptionIfRequired(e)
 		throwNoSuchCloudFileExceptionIfRequired(e)
+	}
+
+	override fun fileWithDate(parent: GoogleDriveFolder, name: String, size: Long?, modifiedDate: Date): GoogleDriveFile {
+		TODO("Not yet implemented")
 	}
 
 	private fun throwUserRecoverableAuthenticationExceptionIfRequired(e: Exception) {
@@ -189,6 +194,10 @@ internal class GoogleDriveCloudContentRepository(context: Context, private val c
 		@Throws(BackendException::class)
 		override fun logout(cloud: GoogleDriveCloud) {
 			impl.logout()
+		}
+
+		override fun fileWithDate(parent: GoogleDriveFolder, name: String, size: Long?, modifiedDate: Date): GoogleDriveFile {
+			TODO("Not yet implemented")
 		}
 
 	}

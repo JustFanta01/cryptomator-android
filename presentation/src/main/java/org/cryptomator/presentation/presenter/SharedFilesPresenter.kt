@@ -1,6 +1,7 @@
 package org.cryptomator.presentation.presenter
 
 import android.net.Uri
+import androidx.core.net.toFile
 import org.cryptomator.data.cloud.crypto.CryptoCloud
 import org.cryptomator.domain.Cloud
 import org.cryptomator.domain.CloudFile
@@ -36,6 +37,7 @@ import org.cryptomator.presentation.util.FileNameValidator.Companion.isInvalidNa
 import org.cryptomator.presentation.workflow.ActivityResult
 import org.cryptomator.presentation.workflow.AuthenticationExceptionHandler
 import org.cryptomator.util.file.FileCacheUtils
+import java.util.Date
 import javax.inject.Inject
 import timber.log.Timber
 
@@ -398,7 +400,8 @@ class SharedFilesPresenter @Inject constructor( //
 	private fun createUploadFile(fileName: String, uri: Uri): UploadFile {
 		return UploadFile.anUploadFile() //
 			.withFileName(fileName) //
-			.withDataSource(UriBasedDataSource.from(uri)) //
+			.withDataSource(UriBasedDataSource.from(uri))
+			.withModifiedDate(UriBasedDataSource.from(uri).modifiedDate(context())) // ++++++++ ADDED!! +++++++
 			.thatIsReplacing(false) //
 			.build()
 	}

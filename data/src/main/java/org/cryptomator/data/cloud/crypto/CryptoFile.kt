@@ -9,14 +9,20 @@ class CryptoFile(
 	/**
 	 * @return The actual file in the underlying, i.e. decorated, CloudContentRepository
 	 */
-	val cloudFile: CloudFile
+	val cloudFile: CloudFile, val modifiedDate: Date?
 ) : CloudFile, CryptoNode {
+
 
 	override val cloud: Cloud?
 		get() = parent.cloud
 
-	override val modified: Date?
-		get() = cloudFile.modified
+/*		override val modified: Date?
+		get() = cloudFile.modified*/
+
+
+	// +++++++++++++++++++++++++++++++++++++++++++++++++++++
+	override val modified : Date? = modifiedDate // not necessary: FIXME
+	// +++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 	override fun equals(other: Any?): Boolean {
 		if (other == null || javaClass != other.javaClass) {

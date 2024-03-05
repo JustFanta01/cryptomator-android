@@ -27,6 +27,7 @@ import org.cryptomator.util.ExceptionUtil
 import java.io.File
 import java.io.IOException
 import java.io.OutputStream
+import java.util.Date
 
 internal class DropboxCloudContentRepository(private val cloud: DropboxCloud, context: Context) : InterceptingCloudContentRepository<DropboxCloud, DropboxNode, DropboxFolder, DropboxFile>(Intercepted(cloud, context)) {
 
@@ -47,6 +48,10 @@ internal class DropboxCloudContentRepository(private val cloud: DropboxCloud, co
 		if (ExceptionUtil.contains(e, InvalidAccessTokenException::class.java)) {
 			throw WrongCredentialsException(cloud)
 		}
+	}
+
+	override fun fileWithDate(parent: DropboxFolder, name: String, size: Long?, modifiedDate: Date): DropboxFile {
+		TODO("Not yet implemented")
 	}
 
 	private class Intercepted(cloud: DropboxCloud, context: Context) : CloudContentRepository<DropboxCloud, DropboxNode, DropboxFolder, DropboxFile> {
@@ -204,6 +209,11 @@ internal class DropboxCloudContentRepository(private val cloud: DropboxCloud, co
 		override fun logout(cloud: DropboxCloud) {
 			this.cloud.logout()
 		}
+
+		override fun fileWithDate(parent: DropboxFolder, name: String, size: Long?, modifiedDate: Date): DropboxFile {
+			TODO("Not yet implemented")
+		}
+
 
 	}
 }

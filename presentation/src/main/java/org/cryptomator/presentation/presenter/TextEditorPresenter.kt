@@ -80,7 +80,8 @@ class TextEditorPresenter @Inject constructor( //
 					listOf( //
 						UploadFile.anUploadFile() //
 							.withFileName(fileName) //
-							.withDataSource(dataSource) //
+							.withDataSource(dataSource)
+							.withModifiedDate(dataSource.modifiedDate(context())) // +++++++ ADDED
 							.thatIsReplacing(true) //
 							.build() //
 					)

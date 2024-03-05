@@ -32,6 +32,7 @@ import java.io.IOException
 import java.io.OutputStream
 import java.nio.ByteBuffer
 import java.nio.channels.Channels
+import java.util.Date
 import java.util.LinkedList
 import java.util.Queue
 import java.util.UUID
@@ -162,6 +163,14 @@ abstract class CryptoImplDecorator(
 		return file(cryptoParent, cleartextName, ciphertextName, cleartextSize)
 	}
 
+	// +++++++++++++++++++++++++++++++++++++++++++++++++
+	@Throws(BackendException::class)
+	fun fileWithDate(cryptoParent: CryptoFolder, cleartextName: String, cleartextSize: Long?, modifiedDate: Date): CryptoFile {
+		val ciphertextName = encryptFileNameDated(cryptoParent, cleartextName, modifiedDate)
+		return fileWithDate(cryptoParent, cleartextName, ciphertextName, cleartextSize, modifiedDate)
+	}
+	// +++++++++++++++++++++++++++++++++++++++++++++++++
+
 	@Throws(BackendException::class)
 	private fun file(cryptoParent: CryptoFolder, cleartextName: String, ciphertextName: String, cleartextSize: Long?): CryptoFile {
 		val ciphertextSize = cleartextSize?.let { cryptor().fileContentCryptor().ciphertextSize(it) + cryptor().fileHeaderCryptor().headerSize() }
@@ -169,19 +178,42 @@ abstract class CryptoImplDecorator(
 		return file(cryptoParent, cleartextName, cloudFile, cleartextSize)
 	}
 
+	// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	private fun fileWithDate(cryptoParent: CryptoFolder, cleartextName: String, ciphertextName: String, cleartextSize: Long?, modifiedDate: Date): CryptoFile {
+		val ciphertextSize = cleartextSize?.let { cryptor().fileContentCryptor().ciphertextSize(it) + cryptor().fileHeaderCryptor().headerSize() }
+		// HERE!!!!!!!!!!!
+		val cloudFile = cloudContentRepository.fileWithDate(getOrCreateCachingAwareDirIdInfo(cryptoParent).cloudFolder, ciphertextName, ciphertextSize, modifiedDate)
+		return fileDated(cryptoParent, cleartextName, cloudFile, cleartextSize, modifiedDate) // +++++
+	}
+	// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
 	@Throws(BackendException::class)
 	fun file(cryptoFile: CryptoFile, cloudFile: CloudFile, cleartextSize: Long?): CryptoFile {
 		return file(cryptoFile.parent, cryptoFile.name, cloudFile, cleartextSize)
 	}
 
+	fun fileWithDate(cryptoFile: CryptoFile, cloudFile: CloudFile, cleartextSize: Long?, modifiedDate: Date): CryptoFile {
+		return fileDated(cryptoFile.parent, cryptoFile.name, cloudFile, cleartextSize, modifiedDate)
+	}
+
+	// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	@Throws(BackendException::class)
 	fun file(cryptoParent: CryptoFolder, cleartextName: String, cloudFile: CloudFile, cleartextSize: Long?): CryptoFile {
-		return CryptoFile(cryptoParent, cleartextName, path(cryptoParent, cleartextName), cleartextSize, cloudFile)
+		return CryptoFile(cryptoParent, cleartextName, path(cryptoParent, cleartextName), cleartextSize, cloudFile, null)
 	}
+	@Throws(BackendException::class)
+	fun fileDated(cryptoParent: CryptoFolder, cleartextName: String, cloudFile: CloudFile, cleartextSize: Long?, modifiedDate: Date): CryptoFile {
+		return CryptoFile(cryptoParent, cleartextName, path(cryptoParent, cleartextName), cleartextSize, cloudFile, modifiedDate)
+	}
+	// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1
 
 	@Throws(BackendException::class)
 	private fun encryptFileName(cryptoParent: CryptoFolder, name: String): String {
 		return encryptName(cryptoParent, name)
+	}
+
+	private fun encryptFileNameDated(cryptoParent: CryptoFolder, name: String, modifiedDate: Date): String {
+		return encryptNameDated(cryptoParent, name, modifiedDate)
 	}
 
 	@Throws(BackendException::class)
@@ -257,17 +289,30 @@ abstract class CryptoImplDecorator(
 	@Throws(BackendException::class, IOException::class)
 	private fun writeFromTmpFile(originalDataSource: DataSource, cryptoFile: CryptoFile, encryptedFile: File, progressAware: ProgressAware<UploadState>, replace: Boolean): CryptoFile {
 		val targetFile = targetFile(cryptoFile, replace)
-		return file(
+		val file = fileWithDate(
 			targetFile,  //
 			cloudContentRepository.write( //
 				targetFile.cloudFile,  //
-				originalDataSource.decorate(from(encryptedFile)), //
+				originalDataSource.decorate(from(encryptedFile, targetFile.modifiedDate!!)), // --> ATTENZIONE: encryptedFile è il file nel filesystem!!!
 				UploadFileReplacingProgressAware(cryptoFile, progressAware),  //
 				replace,  //
 				encryptedFile.length()
 			),  //
-			cryptoFile.size
+			cryptoFile.size, targetFile.modifiedDate!! // FIXME
 		)
+		return file
+/*		return fileWithDate(
+			targetFile,  //
+			cloudContentRepository.write( //
+				targetFile.cloudFile,  //
+				originalDataSource.decorate(from(encryptedFile, targetFile.modifiedDate!!)), // --> ATTENZIONE: encryptedFile è il file nel filesystem!!!
+				UploadFileReplacingProgressAware(cryptoFile, progressAware),  //
+				replace,  //
+				encryptedFile.length()
+			),  //
+			cryptoFile.size, targetFile.modifiedDate!! // FIXME
+		)*/
+
 	}
 
 	@Throws(BackendException::class)
@@ -433,6 +478,7 @@ abstract class CryptoImplDecorator(
 			data.open(context)?.use { stream ->
 				requireNotNull(cryptoFile.size)
 				val encryptedTmpFile = File.createTempFile(UUID.randomUUID().toString(), ".crypto", internalCache)
+				data.modifiedDate(context)?.let { encryptedTmpFile.setLastModified(it.time) }
 				try {
 					Channels.newChannel(FileOutputStream(encryptedTmpFile)).use { writableByteChannel ->
 						EncryptingWritableByteChannel(writableByteChannel, cryptor()).use { encryptingWritableByteChannel ->
@@ -461,4 +507,6 @@ abstract class CryptoImplDecorator(
 			throw FatalBackendException(e)
 		}
 	}
+
+	abstract fun encryptNameDated(cryptoParent: CryptoFolder, name: String, modifiedDate: Date): String
 }

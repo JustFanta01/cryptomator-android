@@ -4,6 +4,7 @@ import android.content.Context
 import java.io.ByteArrayInputStream
 import java.io.IOException
 import java.io.InputStream
+import java.util.Date
 
 class ByteArrayDataSource private constructor(private val bytes: ByteArray) : DataSource {
 
@@ -18,6 +19,10 @@ class ByteArrayDataSource private constructor(private val bytes: ByteArray) : Da
 
 	override fun decorate(delegate: DataSource): DataSource {
 		return delegate
+	}
+
+	override fun modifiedDate(context: Context): Date? {
+		return null
 	}
 
 	@Throws(IOException::class)

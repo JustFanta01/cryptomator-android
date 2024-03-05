@@ -1,5 +1,7 @@
 package org.cryptomator.domain.usecases.cloud;
 
+import java.util.Date;
+
 public class UploadFile {
 
 	private final String fileName;
@@ -8,16 +10,20 @@ public class UploadFile {
 
 	private final Boolean replacing;
 
+	private final Date modifiedDate; // +++++ ADDED ++++++
+
 	private UploadFile(Builder builder) {
 		this.fileName = builder.fileName;
 		this.dataSource = builder.dataSource;
 		this.replacing = builder.replacing;
+		this.modifiedDate = builder.modifiedDate; // +++++ ADDED ++++++
 	}
 
 	public static Builder aCopyOf(UploadFile uploadFile) {
 		return new Builder() //
 				.withFileName(uploadFile.getFileName()) //
-				.withDataSource(uploadFile.getDataSource()) //
+				.withDataSource(uploadFile.getDataSource())
+				.withModifiedDate(uploadFile.getModifiedDate()) // +++++ ADDED ++++++
 				.thatIsReplacing(uploadFile.getReplacing());
 	}
 
@@ -33,6 +39,8 @@ public class UploadFile {
 		return dataSource;
 	}
 
+	public Date getModifiedDate(){ return modifiedDate; } // +++++ ADDED ++++++
+
 	public Boolean getReplacing() {
 		return replacing;
 	}
@@ -42,6 +50,8 @@ public class UploadFile {
 		private String fileName;
 		private DataSource dataSource;
 		private Boolean replacing;
+
+		private Date modifiedDate; // +++++ ADDED ++++++
 
 		public Builder() {
 		}
@@ -56,10 +66,16 @@ public class UploadFile {
 			return this;
 		}
 
+		public Builder withModifiedDate(Date modifiedDate) { // +++++ ADDED - FIXME ++++++
+			this.modifiedDate = modifiedDate;
+			return this;
+		}
+
 		public Builder thatIsReplacing(Boolean replacing) {
 			this.replacing = replacing;
 			return this;
 		}
+
 
 		public UploadFile build() {
 			return new UploadFile(this);

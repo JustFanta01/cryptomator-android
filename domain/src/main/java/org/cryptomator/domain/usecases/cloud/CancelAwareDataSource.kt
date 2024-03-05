@@ -4,6 +4,7 @@ import android.content.Context
 import org.cryptomator.domain.exception.CancellationException
 import java.io.IOException
 import java.io.InputStream
+import java.util.Date
 
 class CancelAwareDataSource private constructor(private val delegate: DataSource, private val cancelled: Flag) : DataSource {
 
@@ -24,6 +25,13 @@ class CancelAwareDataSource private constructor(private val delegate: DataSource
 
 	override fun decorate(delegate: DataSource): CancelAwareDataSource {
 		return CancelAwareDataSource(delegate, cancelled)
+	}
+
+	override fun modifiedDate(context: Context): Date? {
+		if (cancelled.get()){
+			throw CancellationException()
+		}
+		return delegate.modifiedDate(context)
 	}
 
 	@Throws(IOException::class)

@@ -34,6 +34,7 @@ import java.io.IOException
 import java.nio.ByteBuffer
 import java.nio.channels.Channels
 import java.nio.charset.StandardCharsets
+import java.util.Date
 import java.util.UUID
 import java.util.function.Supplier
 import java.util.regex.Pattern
@@ -62,6 +63,7 @@ open class CryptoImplVaultFormat7 : CryptoImplDecorator {
 	)
 
 	@Throws(BackendException::class)
+	//HERE
 	override fun folder(cryptoParent: CryptoFolder, cleartextName: String): CryptoFolder {
 		val dirFileName = encryptFolderName(cryptoParent, cleartextName)
 		val dirFolder = cloudContentRepository.folder(getOrCreateCachingAwareDirIdInfo(cryptoParent).cloudFolder, dirFileName)
@@ -70,7 +72,19 @@ open class CryptoImplVaultFormat7 : CryptoImplDecorator {
 	}
 
 	@Throws(BackendException::class)
+	//HERE
 	override fun encryptName(cryptoParent: CryptoFolder, name: String): String {
+		var ciphertextName: String = cryptor() //
+			.fileNameCryptor() //
+			.encryptFilename(BaseEncoding.base64Url(), name, getOrCreateCachingAwareDirIdInfo(cryptoParent).id.toByteArray(StandardCharsets.UTF_8)) + CLOUD_NODE_EXT
+		if (ciphertextName.length > shorteningThreshold) {
+			ciphertextName = deflate(cryptoParent, ciphertextName)
+		}
+		return ciphertextName
+	}
+
+	override fun encryptNameDated(cryptoParent: CryptoFolder, name: String, modifiedDate: Date): String {
+		var name = "" + modifiedDate.time + "_" + name
 		var ciphertextName: String = cryptor() //
 			.fileNameCryptor() //
 			.encryptFilename(BaseEncoding.base64Url(), name, getOrCreateCachingAwareDirIdInfo(cryptoParent).id.toByteArray(StandardCharsets.UTF_8)) + CLOUD_NODE_EXT
@@ -127,6 +141,12 @@ open class CryptoImplVaultFormat7 : CryptoImplDecorator {
 			return cryptor().fileNameCryptor().decryptFilename(BaseEncoding.base64Url(), it, dirId.toByteArray(StandardCharsets.UTF_8))
 		}
 	}
+
+/*	override fun decryptNameDated(dirId: String, encryptedName: String): String? {
+		return extractEncryptedName(encryptedName)?.let {
+			return cryptor().fileNameCryptor().decryptFilename(BaseEncoding.base64Url(), it, dirId.toByteArray(StandardCharsets.UTF_8))
+		}
+	}*/
 
 	@Throws(BackendException::class)
 	override fun list(cryptoFolder: CryptoFolder): List<CryptoNode> {
@@ -203,6 +223,7 @@ open class CryptoImplVaultFormat7 : CryptoImplDecorator {
 	}
 
 	@Throws(BackendException::class)
+	// HERE
 	private fun cloudNodeFromName(cloudNode: CloudNode, cryptoFolder: CryptoFolder, cleartextName: String, longNameFile: CloudFile?, dirFile: CloudFile?): CryptoNode? {
 		if (cloudNode is CloudFile) {
 			val cleartextSize = cloudNode.size?.let {
@@ -213,7 +234,17 @@ open class CryptoImplVaultFormat7 : CryptoImplDecorator {
 					null
 				}
 			}
+
+			val modifiedDateString = cleartextName.substringBefore("_")
+			var cleartextName = cleartextName.removePrefix(modifiedDateString + "_")
+			val modifiedDate = Date(modifiedDateString.toLong())
+/*
 			return file(cryptoFolder, cleartextName, cloudNode, cleartextSize)
+*/
+			// :-)
+			var cloudNode = cloudContentRepository.fileWithDate(cloudNode.parent, cloudNode.name, cloudNode.size, modifiedDate)
+			return fileDated(cryptoFolder, cleartextName, cloudNode, cleartextSize, modifiedDate)
+
 		} else if (cloudNode is CloudFolder) {
 			return if (longNameFile != null) {
 				// long file
@@ -486,6 +517,7 @@ open class CryptoImplVaultFormat7 : CryptoImplDecorator {
 									progressAware.onProgress(Progress.progress(UploadState.encryption(cloudFile)).between(0).and(ciphertextSize).withValue(encrypted))
 								}
 								encryptingWritableByteChannel.close()
+								data.modifiedDate(context)?.let { value -> encryptedTmpFile.setLastModified(0) }
 								progressAware.onProgress(Progress.completed(UploadState.encryption(cloudFile)))
 								val targetFile = targetFile(cryptoFile, cloudFile, replace)
 								return file(

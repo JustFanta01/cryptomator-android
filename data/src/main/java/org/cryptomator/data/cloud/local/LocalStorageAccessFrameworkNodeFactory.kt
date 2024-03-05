@@ -68,6 +68,20 @@ internal object LocalStorageAccessFrameworkNodeFactory {
 		)
 	}
 
+	fun fileWithDate_(parent: LocalStorageAccessFolder, documentFile: DocumentFile, modifiedDate: Date?): LocalStorageAccessFile {
+		return LocalStorageAccessFile( //
+			parent,  //
+			documentFile.name!!,  // FIXME
+			getNodePath(parent, documentFile.name),  //
+			documentFile.length(),  //
+			//Date(documentFile.lastModified()),  //
+			modifiedDate,
+			DocumentsContract.getDocumentId(documentFile.uri),  //
+			documentFile.uri.toString()
+		)
+	}
+
+
 	fun file(parent: LocalStorageAccessFolder, name: String, size: Long?): LocalStorageAccessFile {
 		return LocalStorageAccessFile( //
 			parent,  //
@@ -88,6 +102,31 @@ internal object LocalStorageAccessFrameworkNodeFactory {
 			path,  //
 			size,  //
 			null,  //
+			documentId,  //
+			getDocumentUri(parent, documentId)
+		)
+	}
+
+	fun fileWithDate(parent: LocalStorageAccessFolder, name: String, size: Long?, modifiedDate: Date): LocalStorageAccessFile {
+		return LocalStorageAccessFile( //
+			parent,  //
+			name,  //
+			getNodePath(parent, name),  //
+			size,  //
+			modifiedDate,  //
+			null,  //
+			null
+		)
+	}
+
+	//@JvmStatic
+	fun fileWithDateId(parent: LocalStorageAccessFolder, name: String, path: String, size: Long?, documentId: String, modifiedDate: Date): LocalStorageAccessFile {
+		return LocalStorageAccessFile(
+			parent,  //
+			name,  //
+			path,  //
+			size,  //
+			modifiedDate,
 			documentId,  //
 			getDocumentUri(parent, documentId)
 		)

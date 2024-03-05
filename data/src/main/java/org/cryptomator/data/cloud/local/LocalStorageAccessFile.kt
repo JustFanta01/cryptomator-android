@@ -10,7 +10,7 @@ class LocalStorageAccessFile(
 	override val name: String,
 	override val path: String,
 	override val size: Long?,
-	override val modified: Date?,
+	override var modified: Date?,
 	override val documentId: String?,
 	private val documentUri: String?
 ) : CloudFile, LocalStorageAccessNode {
@@ -27,6 +27,10 @@ class LocalStorageAccessFile(
 		return if (other == null || javaClass != other.javaClass) {
 			false
 		} else internalEquals(other as LocalStorageAccessFile)
+	}
+
+	fun setLastModified(date: Long){
+		this.modified = Date(date);
 	}
 
 	private fun internalEquals(o: LocalStorageAccessFile): Boolean {

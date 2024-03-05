@@ -26,6 +26,7 @@ import org.cryptomator.domain.usecases.cloud.DataSource
 import org.cryptomator.domain.usecases.cloud.UploadState
 import java.io.ByteArrayOutputStream
 import java.nio.charset.StandardCharsets
+import java.util.Date
 import java.util.function.Supplier
 import java.util.regex.Pattern
 import timber.log.Timber
@@ -272,6 +273,10 @@ internal class CryptoImplVaultFormatPre7(
 		return loadDirId(folder)?.let {
 			dirIdCache.put(folder, createDirIdInfoFor(it))
 		}
+	}
+
+	override fun encryptNameDated(cryptoParent: CryptoFolder, name: String, modifiedDate: Date): String {
+		TODO("Not yet implemented")
 	}
 
 	@Throws(BackendException::class)

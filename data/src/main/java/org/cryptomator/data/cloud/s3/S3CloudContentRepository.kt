@@ -20,6 +20,7 @@ import org.cryptomator.util.ExceptionUtil
 import java.io.File
 import java.io.IOException
 import java.io.OutputStream
+import java.util.Date
 import io.minio.MinioClient
 import io.minio.errors.ErrorResponseException
 
@@ -30,6 +31,10 @@ internal class S3CloudContentRepository(private val cloud: S3Cloud, client: Mini
 		throwNoSuchBucketExceptionIfRequired(e)
 		throwConnectionErrorIfRequired(e)
 		throwWrongCredentialsExceptionIfRequired(e)
+	}
+
+	override fun fileWithDate(parent: S3Folder, name: String, size: Long?, modifiedDate: Date): S3File {
+		TODO("Not yet implemented")
 	}
 
 	@Throws(NoSuchBucketException::class)
@@ -171,6 +176,10 @@ internal class S3CloudContentRepository(private val cloud: S3Cloud, client: Mini
 		@Throws(BackendException::class)
 		override fun logout(cloud: S3Cloud) {
 			this.cloud.logout()
+		}
+
+		override fun fileWithDate(parent: S3Folder, name: String, size: Long?, modifiedDate: Date): S3File {
+			TODO("Not yet implemented")
 		}
 
 	}

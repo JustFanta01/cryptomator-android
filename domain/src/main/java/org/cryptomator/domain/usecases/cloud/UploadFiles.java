@@ -1,7 +1,9 @@
 package org.cryptomator.domain.usecases.cloud;
 
 import android.content.Context;
+import android.util.Log;
 
+import org.cryptomator.domain.Cloud;
 import org.cryptomator.domain.CloudFile;
 import org.cryptomator.domain.CloudFolder;
 import org.cryptomator.domain.exception.BackendException;
@@ -11,6 +13,7 @@ import org.cryptomator.domain.repository.CloudContentRepository;
 import org.cryptomator.domain.usecases.ProgressAware;
 import org.cryptomator.generator.Parameter;
 import org.cryptomator.generator.UseCase;
+import org.cryptomator.util.Optional;
 
 import java.io.Closeable;
 import java.io.File;
@@ -58,7 +61,8 @@ class UploadFiles {
 	public List<CloudFile> execute(ProgressAware<UploadState> progressAware) throws BackendException {
 		cancelled = false;
 		try {
-			return upload(progressAware);
+			List<CloudFile> files = upload(progressAware);
+			return files;
 		} catch (BackendException | RuntimeException e) {
 			if (cancelled) {
 				throw new CancellationException(e);
@@ -91,17 +95,35 @@ class UploadFiles {
 	}
 
 	private CloudFile upload(UploadFile uploadFile, DataSource dataSource, ProgressAware<UploadState> progressAware) throws BackendException {
-		return writeCloudFile( //
-				uploadFile.getFileName(), //
+//		return writeCloudFile( //
+//				uploadFile.getFileName(), //
+//				CancelAwareDataSource.wrap(dataSource, cancelledFlag), //
+//				uploadFile.getReplacing(), //
+//				progressAware);
+
+		// +++++++++++++++++++++ CHE DIO MI INCULI +++++++++++++++++++++++++++++++
+		CloudFile file = writeCloudFile(
+				uploadFile.getFileName(),
 				CancelAwareDataSource.wrap(dataSource, cancelledFlag), //
 				uploadFile.getReplacing(), //
 				progressAware);
+//		Optional.of(file.getModified()).get().setTime(uploadFile.getModifiedDate().getTime());
+//		file.getModified().setTime(dataSource.modifiedDate(context).getTime());
+//		Optional.of(file.getModified()).get().setTime(dataSource.modifiedDate(context).getTime());
+
+		// FIXME
+		if(file.getModified() == null){
+			file.getModified().setTime(dataSource.modifiedDate(context).getTime());
+		}
+		return file;
 	}
 
 	private File copyDataToFile(DataSource dataSource) {
 		File dir = context.getCacheDir();
 		try {
 			File target = createTempFile("upload", "tmp", dir);
+			Optional.of(dataSource.modifiedDate(context)).ifPresent(value -> target.setLastModified(value.getTime()));
+			//target.setLastModified(50000);
 			InputStream in = CancelAwareDataSource.wrap(dataSource, cancelledFlag).open(context);
 			OutputStream out = new FileOutputStream(target);
 			copy(in, out);
@@ -113,13 +135,25 @@ class UploadFiles {
 
 	private CloudFile writeCloudFile(String fileName, CancelAwareDataSource dataSource, boolean replacing, ProgressAware<UploadState> progressAware) throws BackendException {
 		Long size = dataSource.size(context);
-		CloudFile source = cloudContentRepository.file(parent, fileName, size);
-		return cloudContentRepository.write( //
+// OK		CloudFile source = cloudContentRepository.file(parent, fileName, size);
+		CloudFile source = cloudContentRepository.fileWithDate(parent, fileName, size, dataSource.modifiedDate(context));
+/*		return cloudContentRepository.write( //
+				source, //
+				dataSource, //
+				progressAware, //
+				replacing, //
+				size);*/
+
+		CloudFile src =  cloudContentRepository.write( //
 				source, //
 				dataSource, //
 				progressAware, //
 				replacing, //
 				size);
+
+		src.getModified().setTime(dataSource.modifiedDate(context).getTime());
+//		((CryptoFile) src).cloudFile.getModified().setTime(dataSource.modifiedDate(context).getTime());
+		return src;
 	}
 
 	private void copy(InputStream in, OutputStream out) throws IOException {

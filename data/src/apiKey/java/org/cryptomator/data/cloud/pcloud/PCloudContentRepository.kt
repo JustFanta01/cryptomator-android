@@ -18,6 +18,7 @@ import org.cryptomator.util.ExceptionUtil
 import java.io.File
 import java.io.IOException
 import java.io.OutputStream
+import java.util.Date
 
 internal class PCloudContentRepository(private val cloud: PCloud, client: ApiClient, context: Context) :
 	InterceptingCloudContentRepository<PCloud, PCloudNode, PCloudFolder, PCloudFile>(Intercepted(cloud, client, context)) {
@@ -26,6 +27,10 @@ internal class PCloudContentRepository(private val cloud: PCloud, client: ApiCli
 	override fun throwWrappedIfRequired(e: Exception) {
 		throwConnectionErrorIfRequired(e)
 		throwWrongCredentialsExceptionIfRequired(e)
+	}
+
+	override fun fileWithDate(parent: PCloudFolder, name: String, size: Long?, modifiedDate: Date): PCloudFile {
+		TODO("Not yet implemented")
 	}
 
 	@Throws(NetworkConnectionException::class)
@@ -174,6 +179,10 @@ internal class PCloudContentRepository(private val cloud: PCloud, client: ApiCli
 		@Throws(BackendException::class)
 		override fun logout(cloud: PCloud) {
 			this.cloud.logout()
+		}
+
+		override fun fileWithDate(parent: PCloudFolder, name: String, size: Long?, modifiedDate: Date): PCloudFile {
+			TODO("Not yet implemented")
 		}
 
 	}

@@ -29,6 +29,7 @@ import java.io.IOException
 import java.io.OutputStream
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
+import java.util.Date
 import javax.inject.Singleton
 import javax.net.ssl.SSLHandshakeException
 
@@ -44,6 +45,10 @@ internal class WebDavCloudContentRepository(private val cloud: WebDavCloud, conn
 		throwUnauthorizedExceptionIfRequired(e)
 		throwNotImplementedExceptionIfRequired(e)
 		throwServerNotFoundExceptionIfRequired(e)
+	}
+
+	override fun fileWithDate(parent: WebDavFolder, name: String, size: Long?, modifiedDate: Date): WebDavFile {
+		TODO("Not yet implemented")
 	}
 
 	private fun throwServerNotFoundExceptionIfRequired(e: Exception) {
@@ -237,6 +242,10 @@ internal class WebDavCloudContentRepository(private val cloud: WebDavCloud, conn
 
 		override fun logout(cloud: WebDavCloud) {
 			// empty
+		}
+
+		override fun fileWithDate(parent: WebDavFolder, name: String, size: Long?, modifiedDate: Date): WebDavFile {
+			TODO("Not yet implemented")
 		}
 
 	}

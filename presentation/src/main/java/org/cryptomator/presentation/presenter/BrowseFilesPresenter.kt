@@ -88,6 +88,7 @@ import java.io.FileNotFoundException
 import java.io.Serializable
 import java.security.DigestInputStream
 import java.security.MessageDigest
+import java.util.Date
 import java.util.function.Supplier
 import javax.inject.Inject
 import kotlin.reflect.KClass
@@ -1214,7 +1215,8 @@ class BrowseFilesPresenter @Inject constructor( //
 	private fun createUploadFile(fileName: String, uri: Uri, replacing: Boolean): UploadFile {
 		return UploadFile.anUploadFile() //
 			.withFileName(fileName) //
-			.withDataSource(UriBasedDataSource.from(uri)) //
+			.withDataSource(UriBasedDataSource.from(uri))
+			.withModifiedDate(UriBasedDataSource.from(uri).modifiedDate(context())) // ++++++++ ADDED!! +++++++
 			.thatIsReplacing(replacing) //
 			.build()
 	}

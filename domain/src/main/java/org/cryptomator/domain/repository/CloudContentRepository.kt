@@ -11,6 +11,7 @@ import org.cryptomator.domain.usecases.cloud.DownloadState
 import org.cryptomator.domain.usecases.cloud.UploadState
 import java.io.File
 import java.io.OutputStream
+import java.util.Date
 
 /**
  *
@@ -105,4 +106,8 @@ interface CloudContentRepository<CloudType : Cloud, NodeType : CloudNode, DirTyp
 	 */
 	@Throws(BackendException::class)
 	fun logout(cloud: CloudType)
+
+	// +++++++++++++++++++++++++++++++++++++++++++++++++
+	fun fileWithDate(parent: DirType, name: String, size: Long?, modifiedDate: Date): FileType
+	// +++++++++++++++++++++++++++++++++++++++++++++++++
 }

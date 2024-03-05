@@ -17,6 +17,7 @@ import org.cryptomator.domain.usecases.cloud.DownloadState
 import org.cryptomator.domain.usecases.cloud.UploadState
 import java.io.File
 import java.io.OutputStream
+import java.util.Date
 import java.util.WeakHashMap
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -74,6 +75,18 @@ class DispatchingCloudContentRepository @Inject constructor(
 		}
 	}
 
+// +++++++++++++++++++++++++++++++++++++++++++++++++
+	@Throws(BackendException::class)
+	override fun fileWithDate(parent: CloudFolder, name: String, size: Long?, modifiedDate: Date): CloudFile {
+		return try {
+			parent.cloud?.let { networkConnectionCheck.assertConnectionIsPresent(it) } ?: throw IllegalStateException("Parent's cloud shouldn't be null")
+			delegateFor(parent).fileWithDate(parent, name, size, modifiedDate)
+		} catch (e: AuthenticationException) {
+			delegates.remove(parent.cloud)
+			throw e
+		}
+	}
+// +++++++++++++++++++++++++++++++++++++++++++++++++
 	@Throws(BackendException::class)
 	override fun folder(parent: CloudFolder, name: String): CloudFolder {
 		return try {

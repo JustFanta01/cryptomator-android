@@ -14,6 +14,7 @@ import org.cryptomator.util.file.MimeTypes
 import java.io.File
 import java.io.IOException
 import java.io.OutputStream
+import java.util.Date
 
 class LocalStorageAccessFrameworkContentRepository(context: Context, mimeTypes: MimeTypes, localStorageCloud: LocalStorageCloud) :
 	CloudContentRepository<LocalStorageCloud, LocalStorageAccessNode, LocalStorageAccessFolder, LocalStorageAccessFile> {
@@ -106,6 +107,11 @@ class LocalStorageAccessFrameworkContentRepository(context: Context, mimeTypes: 
 	@Throws(BackendException::class)
 	override fun logout(cloud: LocalStorageCloud) {
 		// empty
+	}
+
+	@Throws(BackendException::class)
+	override fun fileWithDate(parent: LocalStorageAccessFolder, name: String, size: Long?, modifiedDate: Date): LocalStorageAccessFile {
+		return localStorageAccessFramework.fileWithDate(parent, name, size, modifiedDate)
 	}
 
 }

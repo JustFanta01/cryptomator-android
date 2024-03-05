@@ -6,6 +6,7 @@ import org.cryptomator.domain.usecases.cloud.DataSource
 import org.cryptomator.presentation.util.ContentResolverUtil
 import java.io.IOException
 import java.io.InputStream
+import java.util.Date
 
 class UriBasedDataSource private constructor(private val uri: Uri) : DataSource {
 
@@ -20,6 +21,10 @@ class UriBasedDataSource private constructor(private val uri: Uri) : DataSource 
 
 	override fun decorate(delegate: DataSource): DataSource {
 		return delegate
+	}
+
+	override fun modifiedDate(context: Context): Date? {
+		return ContentResolverUtil(context).fileModifiedDate(uri)
 	}
 
 	@Throws(IOException::class)

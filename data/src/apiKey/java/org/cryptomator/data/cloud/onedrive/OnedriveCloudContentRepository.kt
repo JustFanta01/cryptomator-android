@@ -22,6 +22,7 @@ import java.io.File
 import java.io.IOException
 import java.io.OutputStream
 import java.net.SocketTimeoutException
+import java.util.Date
 import okhttp3.Request
 
 internal class OnedriveCloudContentRepository(private val cloud: OnedriveCloud, graphServiceClient: GraphServiceClient<Request>, context: Context) :
@@ -31,6 +32,10 @@ internal class OnedriveCloudContentRepository(private val cloud: OnedriveCloud, 
 	override fun throwWrappedIfRequired(e: Exception) {
 		throwNetworkConnectionExceptionIfRequired(e)
 		throwWrongCredentialsExceptionIfRequired(e)
+	}
+
+	override fun fileWithDate(parent: OnedriveFolder, name: String, size: Long?, modifiedDate: Date): OnedriveFile {
+		TODO("Not yet implemented")
 	}
 
 	@Throws(NetworkConnectionException::class)
@@ -151,6 +156,10 @@ internal class OnedriveCloudContentRepository(private val cloud: OnedriveCloud, 
 
 		override fun logout(cloud: OnedriveCloud) {
 			oneDriveImpl.logout()
+		}
+
+		override fun fileWithDate(parent: OnedriveFolder, name: String, size: Long?, modifiedDate: Date): OnedriveFile {
+			TODO("Not yet implemented")
 		}
 
 	}

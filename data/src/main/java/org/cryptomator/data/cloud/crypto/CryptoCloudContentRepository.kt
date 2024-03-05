@@ -16,6 +16,7 @@ import org.cryptomator.domain.usecases.cloud.DownloadState
 import org.cryptomator.domain.usecases.cloud.UploadState
 import java.io.File
 import java.io.OutputStream
+import java.util.Date
 import java.util.function.Supplier
 
 internal class CryptoCloudContentRepository(context: Context, cloudContentRepository: CloudContentRepository<Cloud, CloudNode, CloudFolder, CloudFile>, cloud: CryptoCloud, cryptor: Supplier<Cryptor>) :
@@ -42,6 +43,13 @@ internal class CryptoCloudContentRepository(context: Context, cloudContentReposi
 	override fun file(parent: CryptoFolder, name: String, size: Long?): CryptoFile {
 		return cryptoImpl.file(parent, name, size)
 	}
+
+	// +++++++++++++++++++++++++++++++++++++++++++++++++
+	@Throws(BackendException::class)
+	override fun fileWithDate(parent: CryptoFolder, name: String, size: Long?, modifiedDate: Date): CryptoFile {
+		return cryptoImpl.fileWithDate(parent, name, size, modifiedDate)
+	}
+	// +++++++++++++++++++++++++++++++++++++++++++++++++
 
 	@Throws(BackendException::class)
 	override fun folder(parent: CryptoFolder, name: String): CryptoFolder {

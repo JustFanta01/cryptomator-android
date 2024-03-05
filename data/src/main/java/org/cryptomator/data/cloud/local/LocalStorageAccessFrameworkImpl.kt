@@ -8,6 +8,8 @@ import android.os.Build
 import android.provider.DocumentsContract
 import androidx.documentfile.provider.DocumentFile
 import org.cryptomator.data.cloud.local.LocalStorageAccessFrameworkNodeFactory.file
+import org.cryptomator.data.cloud.local.LocalStorageAccessFrameworkNodeFactory.fileWithDateId
+import org.cryptomator.data.cloud.local.LocalStorageAccessFrameworkNodeFactory.fileWithDate_
 import org.cryptomator.data.cloud.local.LocalStorageAccessFrameworkNodeFactory.folder
 import org.cryptomator.data.cloud.local.LocalStorageAccessFrameworkNodeFactory.from
 import org.cryptomator.data.cloud.local.LocalStorageAccessFrameworkNodeFactory.getNodePath
@@ -29,11 +31,14 @@ import org.cryptomator.domain.usecases.cloud.Progress
 import org.cryptomator.domain.usecases.cloud.UploadState
 import org.cryptomator.util.file.MimeType
 import org.cryptomator.util.file.MimeTypes
+import java.io.File
 import java.io.FileNotFoundException
 import java.io.FileOutputStream
 import java.io.IOException
 import java.io.OutputStream
+import java.util.Date
 import java.util.function.Supplier
+
 
 internal class LocalStorageAccessFrameworkImpl(private val context: Context, private val mimeTypes: MimeTypes, cloud: LocalStorageCloud, private val idCache: DocumentIdCache) {
 
@@ -81,6 +86,24 @@ internal class LocalStorageAccessFrameworkImpl(private val context: Context, pri
 			}
 		}
 		return LocalStorageAccessFrameworkNodeFactory.file(parent, name, size)
+	}
+
+	@Throws(BackendException::class)
+	fun fileWithDate(parent: LocalStorageAccessFolder, name: String, size: Long?, modifiedDate: Date): LocalStorageAccessFile {
+		if (parent.documentId == null) {
+			return LocalStorageAccessFrameworkNodeFactory.fileWithDate(parent, name, size, modifiedDate)
+		}
+		val path = getNodePath(parent, name)
+		val nodeInfo = idCache[path]
+		if (nodeInfo != null && !nodeInfo.isFolder && nodeInfo.id != null) {
+			return fileWithDateId(parent, name, path, size, nodeInfo.id, modifiedDate)
+		}
+		listFilesWithNameFilter(parent, name).getOrNull(0)?.let {
+			if (it is LocalStorageAccessFile) {
+				return idCache.cache(it)
+			}
+		}
+		return LocalStorageAccessFrameworkNodeFactory.fileWithDate(parent, name, size, modifiedDate)
 	}
 
 	@Throws(BackendException::class)
@@ -287,6 +310,8 @@ internal class LocalStorageAccessFrameworkImpl(private val context: Context, pri
 
 	}
 
+
+
 	@Throws(IOException::class, BackendException::class)
 	fun write(file: LocalStorageAccessFile, data: DataSource, progressAware: ProgressAware<UploadState>, replace: Boolean, size: Long): LocalStorageAccessFile {
 		var file = file
@@ -305,6 +330,7 @@ internal class LocalStorageAccessFrameworkImpl(private val context: Context, pri
 			} ?: throw ParentFolderIsNullException(file.parent.name)
 		}
 		val tmpFile = file
+// DANNOSA -->		data.modifiedDate(context)?. let { tmpFile.setLastModified(it.time) }
 		val uploadUri: Uri = (fileUri ?: createNewDocumentSupplier(tmpFile).get()) ?: throw NotFoundException(tmpFile.name)
 
 		data.open(context)?.use { inputStream ->
@@ -329,7 +355,10 @@ internal class LocalStorageAccessFrameworkImpl(private val context: Context, pri
 		} ?: throw FatalBackendException("InputStream shouldn't bee null")
 
 		progressAware.onProgress(Progress.completed(UploadState.upload(file)))
-		return file(file.parent, buildDocumentFile(uploadUri))
+
+//		return file(file.parent, buildDocumentFile(uploadUri))
+		val newFile = fileWithDate_(file.parent, buildDocumentFile(uploadUri), file.modified)
+		return newFile
 	}
 
 	private fun createNewDocumentSupplier(file: LocalStorageAccessFile): Supplier<Uri?> {
