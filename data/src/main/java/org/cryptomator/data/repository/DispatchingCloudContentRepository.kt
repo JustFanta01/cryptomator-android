@@ -255,4 +255,12 @@ class DispatchingCloudContentRepository @Inject constructor(
 		}
 		throw IllegalStateException("Unsupported cloud $cloud")
 	}
+
+	override fun getName(clearTextName: String, cloudFile: CloudFile): String {
+		return delegateFor(cloudFile).getName(clearTextName, cloudFile)
+	}
+
+	override fun getModifiedDate(clearTextName: String, cloudFile: CloudFile): Date {
+		return delegateFor(cloudFile).getModifiedDate(clearTextName, cloudFile)
+	}
 }

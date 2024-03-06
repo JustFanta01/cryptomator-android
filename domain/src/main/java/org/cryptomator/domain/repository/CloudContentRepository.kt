@@ -110,4 +110,12 @@ interface CloudContentRepository<CloudType : Cloud, NodeType : CloudNode, DirTyp
 	// +++++++++++++++++++++++++++++++++++++++++++++++++
 	fun fileWithDate(parent: DirType, name: String, size: Long?, modifiedDate: Date): FileType
 	// +++++++++++++++++++++++++++++++++++++++++++++++++
+
+	fun getName(clearTextName: String, cloudFile: CloudFile): String {
+		return clearTextName
+	}
+
+	fun getModifiedDate(clearTextName: String, cloudFile: CloudFile): Date {
+		return cloudFile.modified ?: Date()
+	}
 }

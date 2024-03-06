@@ -235,15 +235,15 @@ open class CryptoImplVaultFormat7 : CryptoImplDecorator {
 				}
 			}
 
-			val modifiedDateString = cleartextName.substringBefore("_")
-			var cleartextName = cleartextName.removePrefix(modifiedDateString + "_")
-			val modifiedDate = Date(modifiedDateString.toLong())
-/*
-			return file(cryptoFolder, cleartextName, cloudNode, cleartextSize)
-*/
 			// :-)
-			var cloudNode = cloudContentRepository.fileWithDate(cloudNode.parent, cloudNode.name, cloudNode.size, modifiedDate)
-			return fileDated(cryptoFolder, cleartextName, cloudNode, cleartextSize, modifiedDate)
+			val cloudNodeWithActualDate = cloudContentRepository.fileWithDate(
+				cloudNode.parent,
+				cloudNode.name,
+				cloudNode.size,
+				cloudContentRepository.getModifiedDate(cleartextName, cloudNode)
+			)
+
+			return fileDated(cryptoFolder, cloudContentRepository.getName(cleartextName, cloudNodeWithActualDate), cloudNodeWithActualDate, cleartextSize, cloudNodeWithActualDate.modified!!)
 
 		} else if (cloudNode is CloudFolder) {
 			return if (longNameFile != null) {

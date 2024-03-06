@@ -1,6 +1,7 @@
 package org.cryptomator.data.cloud.local
 
 import android.content.Context
+import org.cryptomator.domain.CloudFile
 import org.cryptomator.domain.LocalStorageCloud
 import org.cryptomator.domain.exception.BackendException
 import org.cryptomator.domain.exception.FatalBackendException
@@ -112,6 +113,15 @@ class LocalStorageAccessFrameworkContentRepository(context: Context, mimeTypes: 
 	@Throws(BackendException::class)
 	override fun fileWithDate(parent: LocalStorageAccessFolder, name: String, size: Long?, modifiedDate: Date): LocalStorageAccessFile {
 		return localStorageAccessFramework.fileWithDate(parent, name, size, modifiedDate)
+	}
+
+	override fun getName(clearTextName: String, cloudFile: CloudFile): String { //FIXME names
+		var cleartextName = clearTextName.substringAfter("_")
+		return cleartextName
+	}
+
+	override fun getModifiedDate(clearTextName: String, cloudFile: CloudFile): Date {
+		return  Date(clearTextName.substringBefore("_").toLong())
 	}
 
 }
