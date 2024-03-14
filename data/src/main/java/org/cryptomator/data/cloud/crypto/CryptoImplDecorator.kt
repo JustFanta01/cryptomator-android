@@ -203,7 +203,7 @@ abstract class CryptoImplDecorator(
 	}
 	@Throws(BackendException::class)
 	fun fileDated(cryptoParent: CryptoFolder, cleartextName: String, cloudFile: CloudFile, cleartextSize: Long?, modifiedDate: Date): CryptoFile {
-		return CryptoFile(cryptoParent, cleartextName, path(cryptoParent, cleartextName), cleartextSize, cloudFile, modifiedDate)
+		return CryptoFile(cryptoParent, cleartextName, path(cryptoParent, modifiedDate.time.toString() +"_"+cleartextName), cleartextSize, cloudFile, modifiedDate)
 	}
 	// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1
 

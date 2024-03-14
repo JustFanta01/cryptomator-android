@@ -26,7 +26,7 @@ class MoveFiles {
 	public List<CloudFile> execute() throws BackendException {
 		List<CloudFile> resultFiles = new ArrayList<>();
 		for (CloudFile sourceFile : sourceFiles) {
-			CloudFile targetFile = cloudContentRepository.file(parent, sourceFile.getName());
+			CloudFile targetFile = cloudContentRepository.file(parent, sourceFile.getPath().substring(sourceFile.getPath().lastIndexOf('/')+1));
 			resultFiles.add(cloudContentRepository.move(sourceFile, targetFile));
 		}
 		return resultFiles;
